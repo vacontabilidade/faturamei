@@ -1,0 +1,60 @@
+faturamei/
+│
+├── 📄 index.html                          ← Entry point
+├── 📄 package.json
+├── 📄 vite.config.ts
+├── 📄 tsconfig.json
+├── 📄 .env.example
+├── 📄 .gitignore
+│
+├── 📁 src/
+│   ├── 📄 main.tsx                        ← React entry
+│   ├── 📄 App.tsx                         ← Componente raiz
+│   │
+│   ├── 📁 components/
+│   │   ├── Common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   ├── Table.tsx
+│   │   │   ├── Alert.tsx
+│   │   │   ├── Spinner.tsx
+│   │   │   └── LoginForm.tsx
+│   │   ├── Dashboard/
+│   │   │   ├── StatCard.tsx
+│   │   │   └── AlertaMEI.tsx
+│   │   └── Configuracoes/
+│   │       └── PainelCores.tsx
+│   │
+│   ├── 📁 pages/
+│   │   ├── DashboardPage.tsx
+│   │   ├── ClientesPage.tsx
+│   │   └── ConfiguracaoPage.tsx
+│   │
+│   ├── 📁 services/
+│   │   ├── supabaseClient.ts              ← Conexão Supabase
+│   │   └── authService.ts                 ← Auth + CRUD
+│   │
+│   ├── 📁 types/
+│   │   └── index.ts                       ← Interfaces
+│   │
+│   ├── 📁 utils/
+│   │   └── mei-rules.ts                   ← Lógica MEI
+│   │
+│   └── 📁 styles/
+│       ├── globals.css
+│       └── variables.css
+│
+├── 📁 sql/
+│   └── schema.sql                         ← PostgreSQL
+│
+├── 📁 docs/
+│   ├── README.md
+│   ├── GUIA.md
+│   └── EXEMPLOS.md
+│
+├── 📁 public/
+│   └── (favicon, assets)
+│
+└── 📁 node_modules/                       ← Auto-gerado
