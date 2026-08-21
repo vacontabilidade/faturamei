@@ -42,6 +42,7 @@
             color: var(--gray-900);
             min-height: 100vh;
             padding: 20px;
+            padding-bottom: 70px;
         }
 
         .container {
@@ -600,6 +601,27 @@
             border-bottom: 2px solid var(--border);
             padding-bottom: 10px;
         }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 12px 20px;
+            color: #999;
+            font-size: 11px;
+            background: white;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -891,6 +913,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Footer Global -->
+    <div class="footer">
+        ProdClin v6.15.0 • Desenvolvido por <a href="#">DSP Group</a>
     </div>
 
     <!-- MODALS -->
