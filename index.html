@@ -128,46 +128,68 @@
             padding: 0;
         }
         
-        .sidebar-spacer {
-            flex: 1;
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
         }
-        
-        .user-info {
-            border-top: 1px solid var(--gray-200);
-            padding: 15px;
-            background: var(--gray-50);
-            font-size: 12px;
-        }
-        
-        .user-info-item {
-            margin-bottom: 8px;
-            word-break: break-word;
-        }
-        
-        .user-info-label {
-            font-weight: 600;
-            color: var(--gray-600);
-        }
-        
-        .user-info-value {
-            color: var(--gray-900);
-            font-size: 11px;
-        }
-        
-        .logout-btn {
-            width: 100%;
-            padding: 10px;
+
+        .user-button {
+            background: var(--gray-100);
             border: none;
-            background: #6b7280;
-            color: white;
-            border-radius: 0;
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        .logout-btn:hover {
-            background: #4b5563;
+
+        .user-button:hover {
+            background: var(--gray-200);
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 15px 20px;
+            width: 280px;
+            margin-top: 8px;
+            z-index: 100;
+        }
+
+        .user-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .dropdown-item-label {
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 2px;
+        }
+
+        .dropdown-item-value {
+            color: var(--gray-900);
+            word-break: break-word;
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid var(--gray-200);
+            margin: 12px 0;
         }
         
         .main-content {
@@ -295,36 +317,39 @@
                     <span>Config</span>
                 </button>
             </div>
-            <div id="userEmail" style="font-size: 12px; color: var(--gray-600);">Carregando...</div>
+            
+            <div class="user-menu">
+                <button class="user-button" onclick="toggleUserDropdown()">
+                    <span>👤</span>
+                    <span id="userNameTopNav">Usuário</span>
+                </button>
+                <div id="userDropdown" class="user-dropdown">
+                    <div class="dropdown-item">
+                        <div class="dropdown-item-label">Nome</div>
+                        <div class="dropdown-item-value" id="userNameDropdown">-</div>
+                    </div>
+                    <div class="dropdown-item">
+                        <div class="dropdown-item-label">Email</div>
+                        <div class="dropdown-item-value" id="userEmailDropdown">-</div>
+                    </div>
+                    <div class="dropdown-item">
+                        <div class="dropdown-item-label">Celular</div>
+                        <div class="dropdown-item-value" id="userPhoneDropdown">-</div>
+                    </div>
+                    <div class="dropdown-item">
+                        <div class="dropdown-item-label">Último Acesso</div>
+                        <div class="dropdown-item-value" id="userLastLoginDropdown">-</div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button class="btn" style="width: 100%; font-size: 12px;" onclick="logout()">Sair</button>
+                </div>
+            </div>
         </div>
 
         <!-- CONTAINER -->
         <div class="container">
             <!-- SIDEBAR -->
-            <div class="sidebar">
-                <div class="sidebar-spacer"></div>
-                
-                <!-- USER INFO -->
-                <div class="user-info">
-                    <div class="user-info-item">
-                        <div class="user-info-label">Nome</div>
-                        <div class="user-info-value" id="userName">-</div>
-                    </div>
-                    <div class="user-info-item">
-                        <div class="user-info-label">Email</div>
-                        <div class="user-info-value" id="userEmailInfo">-</div>
-                    </div>
-                    <div class="user-info-item">
-                        <div class="user-info-label">Celular</div>
-                        <div class="user-info-value" id="userPhone">-</div>
-                    </div>
-                    <div class="user-info-item">
-                        <div class="user-info-label">Último Acesso</div>
-                        <div class="user-info-value" id="userLastLogin">-</div>
-                    </div>
-                    <button class="logout-btn" onclick="logout()">Sair</button>
-                </div>
-            </div>
+            <div class="sidebar"></div>
 
             <!-- MAIN CONTENT -->
             <div class="main-content">
@@ -478,7 +503,7 @@
     </div>
 
     <footer>
-        FaturaMEI v6.17.0 • Desenvolvido por DSP Group
+        FaturaMEI v6.18.0 • Desenvolvido por DSP Group
     </footer>
 
     <script>
@@ -548,8 +573,20 @@
         function mostrarApp() {
             document.getElementById('loginScreen').classList.remove('active');
             document.getElementById('appScreen').classList.add('active');
-            document.getElementById('userEmail').textContent = usuarioLogado.email;
         }
+
+        function toggleUserDropdown() {
+            document.getElementById('userDropdown').classList.toggle('active');
+        }
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('userDropdown');
+            const button = document.querySelector('.user-button');
+            if (!e.target.closest('.user-menu')) {
+                dropdown.classList.remove('active');
+            }
+        });
 
         function mudarAba(aba, btn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -630,11 +667,13 @@
             try {
                 const { data } = await supabase.from('usuarios').select('*').eq('email', usuarioLogado.email).single();
                 if (data) {
-                    document.getElementById('userName').textContent = data.nome || '-';
-                    document.getElementById('userEmailInfo').textContent = data.email;
-                    document.getElementById('userPhone').textContent = data.telefone || '-';
+                    const nome = data.nome || 'Usuário';
+                    document.getElementById('userNameTopNav').textContent = nome;
+                    document.getElementById('userNameDropdown').textContent = nome;
+                    document.getElementById('userEmailDropdown').textContent = data.email;
+                    document.getElementById('userPhoneDropdown').textContent = data.telefone || '-';
                     const lastLogin = data.last_login ? new Date(data.last_login).toLocaleString('pt-BR') : 'Agora';
-                    document.getElementById('userLastLogin').textContent = lastLogin;
+                    document.getElementById('userLastLoginDropdown').textContent = lastLogin;
                 }
             } catch (err) {
                 console.error(err);
