@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FaturaMEI v1.0.0</title>
+    <title>FaturaMEI v6.16.0</title>
     <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,14 +39,6 @@
             max-width: 400px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .login-header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
         .form-group {
             margin-bottom: 20px;
         }
@@ -54,14 +46,12 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--gray-700);
         }
-        .form-group input, .form-group select {
+        .form-group input {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--gray-200);
             border-radius: 6px;
-            font-size: 14px;
         }
         .btn {
             padding: 10px 16px;
@@ -72,45 +62,142 @@
             background: var(--primary);
             color: white;
         }
-        .btn:hover {
-            background: var(--primary-dark);
-        }
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-        .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .success {
-            color: green;
-            font-size: 12px;
-            margin-top: 5px;
-        }
+        .btn:hover { background: var(--primary-dark); }
+        .error { color: red; font-size: 12px; margin-top: 5px; }
+        .success { color: green; font-size: 12px; margin-top: 5px; }
         
         #appScreen {
             flex-direction: column;
             min-height: 100vh;
         }
-        .header {
+        
+        .top-nav {
             background: white;
             border-bottom: 1px solid var(--gray-200);
-            padding: 20px 30px;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 20px;
         }
-        .sidebar { width: 200px; background: white; border-right: 1px solid var(--gray-200); padding: 20px; max-height: calc(100vh - 80px); overflow-y: auto; }
-        .nav-item { width: 100%; padding: 12px; border: none; text-align: left; margin-bottom: 10px; cursor: pointer; background: var(--gray-100); border-radius: 6px; }
-        .nav-item.active { background: var(--primary); color: white; }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: none;
+            background: var(--gray-100);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .nav-btn:hover {
+            background: var(--gray-200);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-btn span {
+                display: none;
+            }
+        }
+        
+        .container {
+            display: flex;
+            flex: 1;
+        }
+        
+        .sidebar {
+            width: 200px;
+            background: white;
+            border-right: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+        
+        .sidebar-spacer {
+            flex: 1;
+        }
+        
+        .user-info {
+            border-top: 1px solid var(--gray-200);
+            padding: 15px;
+            background: var(--gray-50);
+            font-size: 12px;
+        }
+        
+        .user-info-item {
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+        
+        .user-info-label {
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+        
+        .user-info-value {
+            color: var(--gray-900);
+            font-size: 11px;
+        }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: #ef4444;
+            color: white;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; margin-top: 20px; }
-        .data-table th { background: var(--gray-50); padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--gray-200); }
-        .data-table td { padding: 12px; border-bottom: 1px solid var(--gray-200); }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .data-table th {
+            background: var(--gray-50);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
         .upload-area {
             border: 2px dashed var(--gray-200);
             border-radius: 8px;
@@ -124,19 +211,46 @@
             background: var(--gray-50);
         }
         #fileInput { display: none; }
+        
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+        
+        .select, .input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            background: #111827;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar-spacer { flex: 1; }
+            .user-info { padding: 10px; }
+            .user-info-item { margin-bottom: 5px; }
+            .top-nav { padding: 10px 15px; }
+            .main-content { padding: 15px; }
+        }
     </style>
 </head>
 <body>
     <!-- LOGIN -->
     <div id="loginScreen" class="screen active">
         <div class="login-card">
-            <div class="login-header">
-                <h1>📊 FaturaMEI</h1>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="font-size: 32px; margin-bottom: 10px;">📊 FaturaMEI</h1>
                 <p>Sistema de Gestão MEI</p>
             </div>
             <form id="loginForm" onsubmit="handleLogin(event)">
@@ -155,23 +269,67 @@
     </div>
 
     <!-- APP -->
-    <div id="appScreen" class="screen">
-        <div class="header">
-            <h2>FaturaMEI</h2>
-            <button class="btn" onclick="logout()">Sair</button>
-        </div>
-        <div style="display: flex; flex: 1;">
-            <div class="sidebar">
-                <button class="nav-item active" onclick="mudarAba('dashboard')">📊 Dashboard</button>
-                <button class="nav-item" onclick="mudarAba('clientes')">👥 Clientes</button>
-                <button class="nav-item" onclick="mudarAba('uploads')">📤 Uploads</button>
-                <button class="nav-item" onclick="mudarAba('notas')">📄 Notas</button>
-                <button class="nav-item" onclick="mudarAba('config')">⚙️ Config</button>
+    <div id="appScreen" class="screen" style="flex-direction: column;">
+        <!-- TOP NAVIGATION -->
+        <div class="top-nav">
+            <div style="font-size: 20px; font-weight: 700;">FaturaMEI</div>
+            <div class="nav-menu">
+                <button class="nav-btn active" onclick="mudarAba('dashboard', this)" title="Dashboard">
+                    <span>📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" onclick="mudarAba('clientes', this)" title="Clientes">
+                    <span>👥</span>
+                    <span>Clientes</span>
+                </button>
+                <button class="nav-btn" onclick="mudarAba('uploads', this)" title="Uploads">
+                    <span>📤</span>
+                    <span>Uploads</span>
+                </button>
+                <button class="nav-btn" onclick="mudarAba('notas', this)" title="Notas">
+                    <span>📄</span>
+                    <span>Notas</span>
+                </button>
+                <button class="nav-btn" onclick="mudarAba('config', this)" title="Configurações">
+                    <span>⚙️</span>
+                    <span>Config</span>
+                </button>
             </div>
+            <div id="userEmail" style="font-size: 12px; color: var(--gray-600);">Carregando...</div>
+        </div>
+
+        <!-- CONTAINER -->
+        <div class="container">
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div class="sidebar-spacer"></div>
+                
+                <!-- USER INFO -->
+                <div class="user-info">
+                    <div class="user-info-item">
+                        <div class="user-info-label">Nome</div>
+                        <div class="user-info-value" id="userName">-</div>
+                    </div>
+                    <div class="user-info-item">
+                        <div class="user-info-label">Email</div>
+                        <div class="user-info-value" id="userEmailInfo">-</div>
+                    </div>
+                    <div class="user-info-item">
+                        <div class="user-info-label">Celular</div>
+                        <div class="user-info-value" id="userPhone">-</div>
+                    </div>
+                    <div class="user-info-item">
+                        <div class="user-info-label">Último Acesso</div>
+                        <div class="user-info-value" id="userLastLogin">-</div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Sair</button>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
             <div class="main-content">
                 <section id="dashboard" class="tab-content active">
                     <h1>Dashboard</h1>
-                    <p id="userInfo">Carregando...</p>
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -217,14 +375,14 @@
                 <section id="uploads" class="tab-content">
                     <h1>Importar PDFs</h1>
                     <div class="form-group">
-                        <label>Selecione Cliente</label>
-                        <select id="uploadCliente" required>
+                        <label>Cliente</label>
+                        <select id="uploadCliente" class="select" required>
                             <option value="">Carregando...</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Tipo de Documento</label>
-                        <select id="uploadTipo" required>
+                        <select id="uploadTipo" class="select" required>
                             <option value="">Selecione...</option>
                             <option value="nf_compra">NF Compra</option>
                             <option value="nf_venda">NF Venda</option>
@@ -236,7 +394,6 @@
                         <p>📄 Clique ou arraste PDFs aqui</p>
                         <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple>
                     </div>
-                    <div id="fileList"></div>
                 </section>
 
                 <section id="notas" class="tab-content">
@@ -257,8 +414,7 @@
                 </section>
 
                 <section id="config" class="tab-content">
-                    <h1>Configurações</h1>
-                    <h2>Usuários</h2>
+                    <h1>Configurações - Usuários</h1>
                     <button class="btn" onclick="abrirNovoUsuario()">+ Novo Usuário</button>
                     <table class="data-table">
                         <thead>
@@ -278,7 +434,7 @@
         </div>
     </div>
 
-    <!-- MODAL NOVO CLIENTE -->
+    <!-- MODALS -->
     <div id="modalCliente" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -286,36 +442,20 @@
                 <button class="close-btn" onclick="fecharModal('modalCliente')">×</button>
             </div>
             <form onsubmit="salvarCliente(event)">
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="clienteTipo" required>
-                        <option value="PJ">Pessoa Jurídica</option>
-                        <option value="PF">Pessoa Física</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text" id="clienteNome" required>
-                </div>
-                <div class="form-group">
-                    <label>CPF/CNPJ</label>
-                    <input type="text" id="clienteCPF" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="clienteEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Telefone</label>
-                    <input type="text" id="clienteTelefone">
-                </div>
+                <select id="clienteTipo" class="select" required>
+                    <option value="PJ">Pessoa Jurídica</option>
+                    <option value="PF">Pessoa Física</option>
+                </select>
+                <input type="text" class="input" id="clienteNome" placeholder="Nome" required>
+                <input type="text" class="input" id="clienteCPF" placeholder="CPF/CNPJ" required>
+                <input type="email" class="input" id="clienteEmail" placeholder="Email" required>
+                <input type="text" class="input" id="clienteTelefone" placeholder="Telefone">
                 <button type="submit" class="btn" style="width: 100%;">Salvar</button>
                 <div id="modalClienteMsg"></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL NOVO USUÁRIO -->
     <div id="modalUsuario" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -323,31 +463,23 @@
                 <button class="close-btn" onclick="fecharModal('modalUsuario')">×</button>
             </div>
             <form onsubmit="salvarUsuario(event)">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text" id="usuarioNome" required>
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="usuarioEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>Perfil</label>
-                    <select id="usuarioPerfil" required>
-                        <option value="usuario">Usuário</option>
-                        <option value="gerente">Gerente</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Telefone</label>
-                    <input type="text" id="usuarioTelefone">
-                </div>
+                <input type="text" class="input" id="usuarioNome" placeholder="Nome" required>
+                <input type="email" class="input" id="usuarioEmail" placeholder="Email" required>
+                <select id="usuarioPerfil" class="select" required>
+                    <option value="usuario">Usuário</option>
+                    <option value="gerente">Gerente</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <input type="text" class="input" id="usuarioTelefone" placeholder="Telefone">
                 <button type="submit" class="btn" style="width: 100%;">Salvar</button>
                 <div id="modalUsuarioMsg"></div>
             </form>
         </div>
     </div>
+
+    <footer>
+        FaturaMEI v6.16.0 • Desenvolvido por DSP Group
+    </footer>
 
     <script>
         const SUPABASE_URL = 'https://abihuiwlpvdnzwpomxni.supabase.co';
@@ -416,13 +548,14 @@
         function mostrarApp() {
             document.getElementById('loginScreen').classList.remove('active');
             document.getElementById('appScreen').classList.add('active');
+            document.getElementById('userEmail').textContent = usuarioLogado.email;
         }
 
-        function mudarAba(aba) {
+        function mudarAba(aba, btn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(aba).classList.add('active');
-            event.target.classList.add('active');
+            btn.classList.add('active');
         }
 
         function abrirNovoCliente() {
@@ -448,17 +581,10 @@
 
             try {
                 const { error } = await supabase.from('clientes').insert([{
-                    empresa_id: 1,
-                    tipo,
-                    nome,
-                    cpf_cnpj: cpf,
-                    email,
-                    telefone,
-                    ativo: true
+                    empresa_id: 1, tipo, nome, cpf_cnpj: cpf, email, telefone, ativo: true
                 }]);
-
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Cliente salvo!</p>';
+                msg.innerHTML = '<p class="success">✅ Salvo!</p>';
                 setTimeout(() => {
                     fecharModal('modalCliente');
                     carregarClientes();
@@ -478,16 +604,10 @@
 
             try {
                 const { error } = await supabase.from('usuarios').insert([{
-                    empresa_id: 1,
-                    nome,
-                    email,
-                    perfil,
-                    telefone,
-                    ativo: true
+                    empresa_id: 1, nome, email, perfil, telefone, ativo: true
                 }]);
-
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Usuário salvo! Crie em Authentication → Users com o mesmo email.</p>';
+                msg.innerHTML = '<p class="success">✅ Crie em Auth → Users</p>';
                 setTimeout(() => {
                     fecharModal('modalUsuario');
                     carregarUsuarios();
@@ -503,18 +623,32 @@
             carregarNotas();
             carregarUsuarios();
             carregarSelectClientes();
+            carregarInfoUsuario();
+        }
+
+        async function carregarInfoUsuario() {
+            try {
+                const { data } = await supabase.from('usuarios').select('*').eq('email', usuarioLogado.email).single();
+                if (data) {
+                    document.getElementById('userName').textContent = data.nome || '-';
+                    document.getElementById('userEmailInfo').textContent = data.email;
+                    document.getElementById('userPhone').textContent = data.telefone || '-';
+                    const lastLogin = data.last_login ? new Date(data.last_login).toLocaleString('pt-BR') : 'Agora';
+                    document.getElementById('userLastLogin').textContent = lastLogin;
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         async function carregarMetricas() {
             try {
-                const { count: totalClientes } = await supabase.from('clientes').select('*', { count: 'exact', head: true });
-                const { count: totalNotas } = await supabase.from('notas_fiscais').select('*', { count: 'exact', head: true });
-                const { count: totalUsuarios } = await supabase.from('usuarios').select('*', { count: 'exact', head: true });
-
-                document.getElementById('totalClientes').textContent = totalClientes || 0;
-                document.getElementById('totalNotas').textContent = totalNotas || 0;
-                document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
-                document.getElementById('userInfo').textContent = `Logado como: ${usuarioLogado.email}`;
+                const { count: c1 } = await supabase.from('clientes').select('*', { count: 'exact', head: true });
+                const { count: c2 } = await supabase.from('notas_fiscais').select('*', { count: 'exact', head: true });
+                const { count: c3 } = await supabase.from('usuarios').select('*', { count: 'exact', head: true });
+                document.getElementById('totalClientes').textContent = c1 || 0;
+                document.getElementById('totalNotas').textContent = c2 || 0;
+                document.getElementById('totalUsuarios').textContent = c3 || 0;
             } catch (err) {
                 console.error(err);
             }
@@ -524,20 +658,11 @@
             try {
                 const { data } = await supabase.from('clientes').select('*').limit(10);
                 const tbody = document.getElementById('clientesBody');
-
                 if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4">Nenhum cliente</td></tr>';
                     return;
                 }
-
-                tbody.innerHTML = data.map(c => `
-                    <tr>
-                        <td>${c.nome}</td>
-                        <td>${c.cpf_cnpj}</td>
-                        <td>${c.tipo}</td>
-                        <td>${c.email}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = data.map(c => `<tr><td>${c.nome}</td><td>${c.cpf_cnpj}</td><td>${c.tipo}</td><td>${c.email}</td></tr>`).join('');
             } catch (err) {
                 console.error(err);
             }
@@ -547,8 +672,7 @@
             try {
                 const { data } = await supabase.from('clientes').select('id, nome');
                 const select = document.getElementById('uploadCliente');
-                select.innerHTML = '<option value="">Selecione...</option>' + 
-                    data.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+                select.innerHTML = '<option value="">Selecione...</option>' + data.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
             } catch (err) {
                 console.error(err);
             }
@@ -558,20 +682,11 @@
             try {
                 const { data } = await supabase.from('notas_fiscais').select('*').limit(10);
                 const tbody = document.getElementById('notasBody');
-
                 if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4">Nenhuma nota</td></tr>';
                     return;
                 }
-
-                tbody.innerHTML = data.map(n => `
-                    <tr>
-                        <td>${n.numero_nf}</td>
-                        <td>-</td>
-                        <td>R$ ${n.valor}</td>
-                        <td>${n.status}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = data.map(n => `<tr><td>${n.numero_nf}</td><td>-</td><td>R$ ${n.valor}</td><td>${n.status}</td></tr>`).join('');
             } catch (err) {
                 console.error(err);
             }
@@ -581,20 +696,11 @@
             try {
                 const { data } = await supabase.from('usuarios').select('*').limit(10);
                 const tbody = document.getElementById('usuariosBody');
-
                 if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4">Nenhum usuário</td></tr>';
                     return;
                 }
-
-                tbody.innerHTML = data.map(u => `
-                    <tr>
-                        <td>${u.nome}</td>
-                        <td>${u.email}</td>
-                        <td>${u.perfil}</td>
-                        <td>${u.ativo ? 'Ativo' : 'Inativo'}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = data.map(u => `<tr><td>${u.nome}</td><td>${u.email}</td><td>${u.perfil}</td><td>${u.ativo ? 'Ativo' : 'Inativo'}</td></tr>`).join('');
             } catch (err) {
                 console.error(err);
             }
@@ -602,8 +708,5 @@
 
         window.addEventListener('load', aguardarSupabase);
     </script>
-    <footer style="background: #111827; color: white; padding: 20px; text-align: center; font-size: 12px; margin-top: 20px;">
-        FaturaMEI v6.16.0 • Desenvolvido por DSP Group
-    </footer>
 </body>
 </html>
