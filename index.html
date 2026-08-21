@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FaturaMEI v6.16.0</title>
+    <title>FaturaMEI v6.18.0</title>
     <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -84,6 +84,7 @@
         .nav-menu {
             display: flex;
             gap: 10px;
+            flex: 1;
         }
         
         .nav-btn {
@@ -106,26 +107,6 @@
         
         .nav-btn:hover {
             background: var(--gray-200);
-        }
-        
-        @media (max-width: 768px) {
-            .nav-btn span {
-                display: none;
-            }
-        }
-        
-        .container {
-            display: flex;
-            flex: 1;
-        }
-        
-        .sidebar {
-            width: 200px;
-            background: white;
-            border-right: 1px solid var(--gray-200);
-            display: flex;
-            flex-direction: column;
-            padding: 0;
         }
         
         .user-menu {
@@ -191,7 +172,7 @@
             border-top: 1px solid var(--gray-200);
             margin: 12px 0;
         }
-        
+
         .main-content {
             flex: 1;
             padding: 30px;
@@ -236,7 +217,7 @@
         
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; }
+        .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
         
@@ -246,6 +227,7 @@
             border: 1px solid var(--gray-200);
             border-radius: 6px;
             margin-bottom: 10px;
+            font-size: 14px;
         }
         
         footer {
@@ -256,14 +238,16 @@
             font-size: 12px;
             border-top: 1px solid var(--gray-200);
         }
-        
-        @media (max-width: 768px) {
-            .sidebar { width: 60px; }
-            .sidebar-spacer { flex: 1; }
-            .user-info { padding: 10px; }
-            .user-info-item { margin-bottom: 5px; }
-            .top-nav { padding: 10px 15px; }
-            .main-content { padding: 15px; }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h1 {
+            margin: 0;
         }
     </style>
 </head>
@@ -304,6 +288,10 @@
                     <span>👥</span>
                     <span>Clientes</span>
                 </button>
+                <button class="nav-btn" onclick="mudarAba('usuarios', this)" title="Usuários">
+                    <span>👤</span>
+                    <span>Usuários</span>
+                </button>
                 <button class="nav-btn" onclick="mudarAba('uploads', this)" title="Uploads">
                     <span>📤</span>
                     <span>Uploads</span>
@@ -311,10 +299,6 @@
                 <button class="nav-btn" onclick="mudarAba('notas', this)" title="Notas">
                     <span>📄</span>
                     <span>Notas</span>
-                </button>
-                <button class="nav-btn" onclick="mudarAba('config', this)" title="Configurações">
-                    <span>⚙️</span>
-                    <span>Config</span>
                 </button>
             </div>
             
@@ -333,12 +317,8 @@
                         <div class="dropdown-item-value" id="userEmailDropdown">-</div>
                     </div>
                     <div class="dropdown-item">
-                        <div class="dropdown-item-label">Celular</div>
-                        <div class="dropdown-item-value" id="userPhoneDropdown">-</div>
-                    </div>
-                    <div class="dropdown-item">
-                        <div class="dropdown-item-label">Último Acesso</div>
-                        <div class="dropdown-item-value" id="userLastLoginDropdown">-</div>
+                        <div class="dropdown-item-label">Perfil</div>
+                        <div class="dropdown-item-value" id="userPerfilDropdown">-</div>
                     </div>
                     <div class="dropdown-divider"></div>
                     <button class="btn" style="width: 100%; font-size: 12px;" onclick="logout()">Sair</button>
@@ -346,120 +326,120 @@
             </div>
         </div>
 
-        <!-- CONTAINER -->
-        <div class="container">
-            <!-- SIDEBAR -->
-            <div class="sidebar"></div>
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <section id="dashboard" class="tab-content active">
+                <h1>Dashboard</h1>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total de Clientes</td>
+                            <td id="totalClientes">0</td>
+                        </tr>
+                        <tr>
+                            <td>Total de Notas</td>
+                            <td id="totalNotas">0</td>
+                        </tr>
+                        <tr>
+                            <td>Total de Usuários</td>
+                            <td id="totalUsuarios">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
 
-            <!-- MAIN CONTENT -->
-            <div class="main-content">
-                <section id="dashboard" class="tab-content active">
-                    <h1>Dashboard</h1>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Métrica</th>
-                                <th>Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Total de Clientes</td>
-                                <td id="totalClientes">0</td>
-                            </tr>
-                            <tr>
-                                <td>Total de Notas</td>
-                                <td id="totalNotas">0</td>
-                            </tr>
-                            <tr>
-                                <td>Total de Usuários</td>
-                                <td id="totalUsuarios">0</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
-
-                <section id="clientes" class="tab-content">
+            <section id="clientes" class="tab-content">
+                <div class="section-header">
                     <h1>Clientes</h1>
                     <button class="btn" onclick="abrirNovoCliente()">+ Novo Cliente</button>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>CPF/CNPJ</th>
-                                <th>Tipo</th>
-                                <th>Email</th>
-                            </tr>
-                        </thead>
-                        <tbody id="clientesBody">
-                            <tr><td colspan="4">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </section>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF/CNPJ</th>
+                            <th>Tipo</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientesBody">
+                        <tr><td colspan="5">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </section>
 
-                <section id="uploads" class="tab-content">
-                    <h1>Importar PDFs</h1>
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <select id="uploadCliente" class="select" required>
-                            <option value="">Carregando...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo de Documento</label>
-                        <select id="uploadTipo" class="select" required>
-                            <option value="">Selecione...</option>
-                            <option value="nf_compra">NF Compra</option>
-                            <option value="nf_venda">NF Venda</option>
-                            <option value="nf_servicos">NF Serviços</option>
-                            <option value="extrato">Extrato</option>
-                        </select>
-                    </div>
-                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                        <p>📄 Clique ou arraste PDFs aqui</p>
-                        <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple>
-                    </div>
-                </section>
-
-                <section id="notas" class="tab-content">
-                    <h1>Notas Fiscais</h1>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>NF</th>
-                                <th>Cliente</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="notasBody">
-                            <tr><td colspan="4">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </section>
-
-                <section id="config" class="tab-content">
-                    <h1>Configurações - Usuários</h1>
+            <section id="usuarios" class="tab-content">
+                <div class="section-header">
+                    <h1>Usuários</h1>
                     <button class="btn" onclick="abrirNovoUsuario()">+ Novo Usuário</button>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Email</th>
-                                <th>Perfil</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usuariosBody">
-                            <tr><td colspan="4">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </section>
-            </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Perfil</th>
+                            <th>Telefone</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuariosBody">
+                        <tr><td colspan="5">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="uploads" class="tab-content">
+                <h1>Importar PDFs</h1>
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select id="uploadCliente" class="select" required>
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Documento</label>
+                    <select id="uploadTipo" class="select" required>
+                        <option value="">Selecione...</option>
+                        <option value="nf_compra">NF Compra</option>
+                        <option value="nf_venda">NF Venda</option>
+                        <option value="nf_servicos">NF Serviços</option>
+                        <option value="extrato">Extrato</option>
+                    </select>
+                </div>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <p>📄 Clique ou arraste PDFs aqui</p>
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple>
+                </div>
+            </section>
+
+            <section id="notas" class="tab-content">
+                <h1>Notas Fiscais</h1>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>NF</th>
+                            <th>Cliente</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notasBody">
+                        <tr><td colspan="4">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </section>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODAL NOVO CLIENTE -->
     <div id="modalCliente" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -481,6 +461,7 @@
         </div>
     </div>
 
+    <!-- MODAL NOVO USUÁRIO -->
     <div id="modalUsuario" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -491,9 +472,11 @@
                 <input type="text" class="input" id="usuarioNome" placeholder="Nome" required>
                 <input type="email" class="input" id="usuarioEmail" placeholder="Email" required>
                 <select id="usuarioPerfil" class="select" required>
-                    <option value="usuario">Usuário</option>
-                    <option value="gerente">Gerente</option>
+                    <option value="">Selecione perfil...</option>
                     <option value="admin">Admin</option>
+                    <option value="gerente">Gerente</option>
+                    <option value="usuario">Usuário</option>
+                    <option value="cliente">Cliente</option>
                 </select>
                 <input type="text" class="input" id="usuarioTelefone" placeholder="Telefone">
                 <button type="submit" class="btn" style="width: 100%;">Salvar</button>
@@ -503,7 +486,7 @@
     </div>
 
     <footer>
-        FaturaMEI v6.18.0 • Desenvolvido por DSP Group
+        FaturaMEI v6.19.0 • Desenvolvido por DSP Group
     </footer>
 
     <script>
@@ -579,10 +562,8 @@
             document.getElementById('userDropdown').classList.toggle('active');
         }
 
-        // Fechar dropdown ao clicar fora
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('userDropdown');
-            const button = document.querySelector('.user-button');
             if (!e.target.closest('.user-menu')) {
                 dropdown.classList.remove('active');
             }
@@ -621,10 +602,11 @@
                     empresa_id: 1, tipo, nome, cpf_cnpj: cpf, email, telefone, ativo: true
                 }]);
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Salvo!</p>';
+                msg.innerHTML = '<p class="success">✅ Cliente salvo!</p>';
                 setTimeout(() => {
                     fecharModal('modalCliente');
                     carregarClientes();
+                    carregarSelectClientes();
                 }, 1000);
             } catch (err) {
                 msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
@@ -642,9 +624,10 @@
             try {
                 const { error } = await supabase.from('usuarios').insert([{
                     empresa_id: 1, nome, email, perfil, telefone, ativo: true
-                }]);
+                }], { returning: 'minimal' });
+                
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Crie em Auth → Users</p>';
+                msg.innerHTML = '<p class="success">✅ Usuário criado! Crie em Authentication → Users com o mesmo email e perfil: ' + perfil + '</p>';
                 setTimeout(() => {
                     fecharModal('modalUsuario');
                     carregarUsuarios();
@@ -657,8 +640,8 @@
         async function carregarDados() {
             carregarMetricas();
             carregarClientes();
-            carregarNotas();
             carregarUsuarios();
+            carregarNotas();
             carregarSelectClientes();
             carregarInfoUsuario();
         }
@@ -671,9 +654,7 @@
                     document.getElementById('userNameTopNav').textContent = nome;
                     document.getElementById('userNameDropdown').textContent = nome;
                     document.getElementById('userEmailDropdown').textContent = data.email;
-                    document.getElementById('userPhoneDropdown').textContent = data.telefone || '-';
-                    const lastLogin = data.last_login ? new Date(data.last_login).toLocaleString('pt-BR') : 'Agora';
-                    document.getElementById('userLastLoginDropdown').textContent = lastLogin;
+                    document.getElementById('userPerfilDropdown').textContent = data.perfil || '-';
                 }
             } catch (err) {
                 console.error(err);
@@ -695,13 +676,13 @@
 
         async function carregarClientes() {
             try {
-                const { data } = await supabase.from('clientes').select('*').limit(10);
+                const { data } = await supabase.from('clientes').select('*').limit(20);
                 const tbody = document.getElementById('clientesBody');
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">Nenhum cliente</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5">Nenhum cliente</td></tr>';
                     return;
                 }
-                tbody.innerHTML = data.map(c => `<tr><td>${c.nome}</td><td>${c.cpf_cnpj}</td><td>${c.tipo}</td><td>${c.email}</td></tr>`).join('');
+                tbody.innerHTML = data.map(c => `<tr><td>${c.nome}</td><td>${c.cpf_cnpj}</td><td>${c.tipo}</td><td>${c.email}</td><td>${c.telefone || '-'}</td></tr>`).join('');
             } catch (err) {
                 console.error(err);
             }
@@ -719,7 +700,7 @@
 
         async function carregarNotas() {
             try {
-                const { data } = await supabase.from('notas_fiscais').select('*').limit(10);
+                const { data } = await supabase.from('notas_fiscais').select('*').limit(20);
                 const tbody = document.getElementById('notasBody');
                 if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4">Nenhuma nota</td></tr>';
@@ -733,13 +714,13 @@
 
         async function carregarUsuarios() {
             try {
-                const { data } = await supabase.from('usuarios').select('*').limit(10);
+                const { data } = await supabase.from('usuarios').select('*').limit(20);
                 const tbody = document.getElementById('usuariosBody');
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">Nenhum usuário</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5">Nenhum usuário</td></tr>';
                     return;
                 }
-                tbody.innerHTML = data.map(u => `<tr><td>${u.nome}</td><td>${u.email}</td><td>${u.perfil}</td><td>${u.ativo ? 'Ativo' : 'Inativo'}</td></tr>`).join('');
+                tbody.innerHTML = data.map(u => `<tr><td>${u.nome}</td><td>${u.email}</td><td>${u.perfil}</td><td>${u.telefone || '-'}</td><td>${u.ativo ? '✅ Ativo' : '❌ Inativo'}</td></tr>`).join('');
             } catch (err) {
                 console.error(err);
             }
