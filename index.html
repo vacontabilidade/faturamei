@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FaturaMEI v6.18.0</title>
+    <title>FaturaMEI v7.0.0</title>
     <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,6 +16,7 @@
             --gray-600: #4b5563;
             --gray-700: #374151;
             --gray-900: #111827;
+            --danger: #dc2626;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -63,6 +64,9 @@
             color: white;
         }
         .btn:hover { background: var(--primary-dark); }
+        .btn-small { padding: 6px 12px; font-size: 12px; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #991b1b; }
         .error { color: red; font-size: 12px; margin-top: 5px; }
         .success { color: green; font-size: 12px; margin-top: 5px; }
         
@@ -195,10 +199,64 @@
             text-align: left;
             font-weight: 600;
             border-bottom: 2px solid var(--gray-200);
+            font-size: 13px;
         }
         .data-table td {
             padding: 12px;
             border-bottom: 1px solid var(--gray-200);
+            font-size: 13px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btns button {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .client-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .client-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .client-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .client-card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .client-card-subtitle {
+            font-size: 12px;
+            color: var(--gray-600);
         }
         
         .upload-area {
@@ -249,6 +307,43 @@
         .section-header h1 {
             margin: 0;
         }
+
+        .back-btn {
+            background: var(--gray-100);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .dashboard-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .dashboard-label {
+            font-size: 12px;
+            color: var(--gray-600);
+            font-weight: 600;
+        }
+
+        .dashboard-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -296,10 +391,6 @@
                     <span>📤</span>
                     <span>Uploads</span>
                 </button>
-                <button class="nav-btn" onclick="mudarAba('notas', this)" title="Notas">
-                    <span>📄</span>
-                    <span>Notas</span>
-                </button>
             </div>
             
             <div class="user-menu">
@@ -343,8 +434,8 @@
                             <td id="totalClientes">0</td>
                         </tr>
                         <tr>
-                            <td>Total de Notas</td>
-                            <td id="totalNotas">0</td>
+                            <td>Total de Uploads</td>
+                            <td id="totalUploads">0</td>
                         </tr>
                         <tr>
                             <td>Total de Usuários</td>
@@ -355,24 +446,18 @@
             </section>
 
             <section id="clientes" class="tab-content">
-                <div class="section-header">
-                    <h1>Clientes</h1>
-                    <button class="btn" onclick="abrirNovoCliente()">+ Novo Cliente</button>
+                <div id="clientesListView">
+                    <div class="section-header">
+                        <h1>Clientes</h1>
+                        <button class="btn" onclick="abrirNovoCliente()">+ Novo Cliente</button>
+                    </div>
+                    <div id="clientesListContainer"></div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>CPF/CNPJ</th>
-                            <th>Tipo</th>
-                            <th>Email</th>
-                            <th>Telefone</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientesBody">
-                        <tr><td colspan="5">Carregando...</td></tr>
-                    </tbody>
-                </table>
+
+                <div id="clienteDetailView" style="display: none;">
+                    <button class="back-btn" onclick="voltarClientesList()">← Voltar</button>
+                    <div id="clienteDetailContent"></div>
+                </div>
             </section>
 
             <section id="usuarios" class="tab-content">
@@ -388,50 +473,27 @@
                             <th>Perfil</th>
                             <th>Telefone</th>
                             <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="usuariosBody">
-                        <tr><td colspan="5">Carregando...</td></tr>
+                        <tr><td colspan="6">Carregando...</td></tr>
                     </tbody>
                 </table>
             </section>
 
             <section id="uploads" class="tab-content">
-                <h1>Importar PDFs</h1>
-                <div class="form-group">
-                    <label>Cliente</label>
-                    <select id="uploadCliente" class="select" required>
-                        <option value="">Carregando...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Tipo de Documento</label>
-                    <select id="uploadTipo" class="select" required>
-                        <option value="">Selecione...</option>
-                        <option value="nf_compra">NF Compra</option>
-                        <option value="nf_venda">NF Venda</option>
-                        <option value="nf_servicos">NF Serviços</option>
-                        <option value="extrato">Extrato</option>
-                    </select>
-                </div>
-                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                    <p>📄 Clique ou arraste PDFs aqui</p>
-                    <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple>
-                </div>
-            </section>
-
-            <section id="notas" class="tab-content">
-                <h1>Notas Fiscais</h1>
+                <h1>Uploads e Arquivos</h1>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>NF</th>
                             <th>Cliente</th>
-                            <th>Valor</th>
-                            <th>Status</th>
+                            <th>Arquivo</th>
+                            <th>Tipo</th>
+                            <th>Data</th>
                         </tr>
                     </thead>
-                    <tbody id="notasBody">
+                    <tbody id="uploadsBody">
                         <tr><td colspan="4">Carregando...</td></tr>
                     </tbody>
                 </table>
@@ -447,16 +509,39 @@
                 <button class="close-btn" onclick="fecharModal('modalCliente')">×</button>
             </div>
             <form onsubmit="salvarCliente(event)">
-                <select id="clienteTipo" class="select" required>
+                <select id="clienteTipo" class="select" required onchange="atualizarLabelCPF()">
                     <option value="PJ">Pessoa Jurídica</option>
                     <option value="PF">Pessoa Física</option>
                 </select>
                 <input type="text" class="input" id="clienteNome" placeholder="Nome" required>
-                <input type="text" class="input" id="clienteCPF" placeholder="CPF/CNPJ" required>
+                <input type="text" class="input" id="clienteCPF" placeholder="CNPJ" maxlength="18" required oninput="mascaraCNPJ(this)">
                 <input type="email" class="input" id="clienteEmail" placeholder="Email" required>
-                <input type="text" class="input" id="clienteTelefone" placeholder="Telefone">
+                <input type="text" class="input" id="clienteTelefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
                 <button type="submit" class="btn" style="width: 100%;">Salvar</button>
                 <div id="modalClienteMsg"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR CLIENTE -->
+    <div id="modalEditarCliente" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Cliente</h2>
+                <button class="close-btn" onclick="fecharModal('modalEditarCliente')">×</button>
+            </div>
+            <form onsubmit="atualizarCliente(event)">
+                <input type="hidden" id="editClienteId">
+                <select id="editClienteTipo" class="select" required>
+                    <option value="PJ">Pessoa Jurídica</option>
+                    <option value="PF">Pessoa Física</option>
+                </select>
+                <input type="text" class="input" id="editClienteNome" placeholder="Nome" required>
+                <input type="text" class="input" id="editClienteCPF" placeholder="CNPJ" maxlength="18" required oninput="mascaraCNPJ(this)">
+                <input type="email" class="input" id="editClienteEmail" placeholder="Email" required>
+                <input type="text" class="input" id="editClienteTelefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
+                <button type="submit" class="btn" style="width: 100%;">Atualizar</button>
+                <div id="modalEditarClienteMsg"></div>
             </form>
         </div>
     </div>
@@ -476,17 +561,44 @@
                     <option value="admin">Admin</option>
                     <option value="gerente">Gerente</option>
                     <option value="usuario">Usuário</option>
+                    <option value="franquia">Franquia</option>
                     <option value="cliente">Cliente</option>
                 </select>
-                <input type="text" class="input" id="usuarioTelefone" placeholder="Telefone">
+                <input type="text" class="input" id="usuarioTelefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
                 <button type="submit" class="btn" style="width: 100%;">Salvar</button>
                 <div id="modalUsuarioMsg"></div>
             </form>
         </div>
     </div>
 
+    <!-- MODAL EDITAR USUÁRIO -->
+    <div id="modalEditarUsuario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Usuário</h2>
+                <button class="close-btn" onclick="fecharModal('modalEditarUsuario')">×</button>
+            </div>
+            <form onsubmit="atualizarUsuario(event)">
+                <input type="hidden" id="editUsuarioId">
+                <input type="text" class="input" id="editUsuarioNome" placeholder="Nome" required>
+                <input type="email" class="input" id="editUsuarioEmail" placeholder="Email" required>
+                <select id="editUsuarioPerfil" class="select" required>
+                    <option value="">Selecione perfil...</option>
+                    <option value="admin">Admin</option>
+                    <option value="gerente">Gerente</option>
+                    <option value="usuario">Usuário</option>
+                    <option value="franquia">Franquia</option>
+                    <option value="cliente">Cliente</option>
+                </select>
+                <input type="text" class="input" id="editUsuarioTelefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
+                <button type="submit" class="btn" style="width: 100%;">Atualizar</button>
+                <div id="modalEditarUsuarioMsg"></div>
+            </form>
+        </div>
+    </div>
+
     <footer>
-        FaturaMEI v6.19.0 • Desenvolvido por DSP Group
+        FaturaMEI v7.0.0 • Desenvolvido por DSP Group
     </footer>
 
     <script>
@@ -495,6 +607,32 @@
 
         let supabase = null;
         let usuarioLogado = null;
+        let clienteSelecionado = null;
+
+        // MÁSCARAS
+        function mascaraCNPJ(input) {
+            let valor = input.value.replace(/\D/g, '');
+            if (valor.length === 11) {
+                valor = valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            } else if (valor.length === 14) {
+                valor = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            }
+            input.value = valor;
+        }
+
+        function mascaraTelefone(input) {
+            let valor = input.value.replace(/\D/g, '');
+            if (valor.length >= 10) {
+                valor = valor.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3');
+            }
+            input.value = valor;
+        }
+
+        function atualizarLabelCPF() {
+            const tipo = document.getElementById('clienteTipo').value;
+            const label = tipo === 'PJ' ? 'CNPJ' : 'CPF';
+            document.getElementById('clienteCPF').placeholder = label;
+        }
 
         function aguardarSupabase() {
             if (!window.supabase) {
@@ -578,6 +716,7 @@
 
         function abrirNovoCliente() {
             document.getElementById('modalCliente').classList.add('active');
+            atualizarLabelCPF();
         }
 
         function abrirNovoUsuario() {
@@ -592,7 +731,7 @@
             e.preventDefault();
             const tipo = document.getElementById('clienteTipo').value;
             const nome = document.getElementById('clienteNome').value;
-            const cpf = document.getElementById('clienteCPF').value;
+            const cpf = document.getElementById('clienteCPF').value.replace(/\D/g, '');
             const email = document.getElementById('clienteEmail').value;
             const telefone = document.getElementById('clienteTelefone').value;
             const msg = document.getElementById('modalClienteMsg');
@@ -604,12 +743,48 @@
                 if (error) throw error;
                 msg.innerHTML = '<p class="success">✅ Cliente salvo!</p>';
                 setTimeout(() => {
+                    document.getElementById('modalCliente').reset();
                     fecharModal('modalCliente');
                     carregarClientes();
-                    carregarSelectClientes();
                 }, 1000);
             } catch (err) {
                 msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
+            }
+        }
+
+        async function atualizarCliente(e) {
+            e.preventDefault();
+            const id = document.getElementById('editClienteId').value;
+            const tipo = document.getElementById('editClienteTipo').value;
+            const nome = document.getElementById('editClienteNome').value;
+            const cpf = document.getElementById('editClienteCPF').value.replace(/\D/g, '');
+            const email = document.getElementById('editClienteEmail').value;
+            const telefone = document.getElementById('editClienteTelefone').value;
+            const msg = document.getElementById('modalEditarClienteMsg');
+
+            try {
+                const { error } = await supabase.from('clientes').update({
+                    tipo, nome, cpf_cnpj: cpf, email, telefone
+                }).eq('id', id);
+                if (error) throw error;
+                msg.innerHTML = '<p class="success">✅ Cliente atualizado!</p>';
+                setTimeout(() => {
+                    fecharModal('modalEditarCliente');
+                    carregarClientes();
+                }, 1000);
+            } catch (err) {
+                msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
+            }
+        }
+
+        async function deletarCliente(id) {
+            if (!confirm('Tem certeza que deseja deletar este cliente?')) return;
+            try {
+                const { error } = await supabase.from('clientes').delete().eq('id', id);
+                if (error) throw error;
+                carregarClientes();
+            } catch (err) {
+                alert('Erro ao deletar: ' + err.message);
             }
         }
 
@@ -618,17 +793,17 @@
             const nome = document.getElementById('usuarioNome').value;
             const email = document.getElementById('usuarioEmail').value;
             const perfil = document.getElementById('usuarioPerfil').value;
-            const telefone = document.getElementById('usuarioTelefone').value;
+            const telefone = document.getElementById('usuarioTelefone').value.replace(/\D/g, '');
             const msg = document.getElementById('modalUsuarioMsg');
 
             try {
                 const { error } = await supabase.from('usuarios').insert([{
                     empresa_id: 1, nome, email, perfil, telefone, ativo: true
                 }], { returning: 'minimal' });
-                
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Usuário criado! Crie em Authentication → Users com o mesmo email e perfil: ' + perfil + '</p>';
+                msg.innerHTML = '<p class="success">✅ Usuário criado! Crie em Authentication → Users com o mesmo email.</p>';
                 setTimeout(() => {
+                    document.getElementById('modalUsuario').reset();
                     fecharModal('modalUsuario');
                     carregarUsuarios();
                 }, 2000);
@@ -637,12 +812,65 @@
             }
         }
 
+        async function atualizarUsuario(e) {
+            e.preventDefault();
+            const id = document.getElementById('editUsuarioId').value;
+            const nome = document.getElementById('editUsuarioNome').value;
+            const email = document.getElementById('editUsuarioEmail').value;
+            const perfil = document.getElementById('editUsuarioPerfil').value;
+            const telefone = document.getElementById('editUsuarioTelefone').value.replace(/\D/g, '');
+            const msg = document.getElementById('modalEditarUsuarioMsg');
+
+            try {
+                const { error } = await supabase.from('usuarios').update({
+                    nome, email, perfil, telefone
+                }).eq('id', id);
+                if (error) throw error;
+                msg.innerHTML = '<p class="success">✅ Usuário atualizado!</p>';
+                setTimeout(() => {
+                    fecharModal('modalEditarUsuario');
+                    carregarUsuarios();
+                }, 1000);
+            } catch (err) {
+                msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
+            }
+        }
+
+        async function deletarUsuario(id) {
+            if (!confirm('Tem certeza que deseja deletar este usuário?')) return;
+            try {
+                const { error } = await supabase.from('usuarios').delete().eq('id', id);
+                if (error) throw error;
+                carregarUsuarios();
+            } catch (err) {
+                alert('Erro ao deletar: ' + err.message);
+            }
+        }
+
+        function abrirEditarCliente(id, tipo, nome, cpf, email, telefone) {
+            document.getElementById('editClienteId').value = id;
+            document.getElementById('editClienteTipo').value = tipo;
+            document.getElementById('editClienteNome').value = nome;
+            document.getElementById('editClienteCPF').value = cpf;
+            document.getElementById('editClienteEmail').value = email;
+            document.getElementById('editClienteTelefone').value = telefone;
+            document.getElementById('modalEditarCliente').classList.add('active');
+        }
+
+        function abrirEditarUsuario(id, nome, email, perfil, telefone) {
+            document.getElementById('editUsuarioId').value = id;
+            document.getElementById('editUsuarioNome').value = nome;
+            document.getElementById('editUsuarioEmail').value = email;
+            document.getElementById('editUsuarioPerfil').value = perfil;
+            document.getElementById('editUsuarioTelefone').value = telefone;
+            document.getElementById('modalEditarUsuario').classList.add('active');
+        }
+
         async function carregarDados() {
             carregarMetricas();
             carregarClientes();
             carregarUsuarios();
-            carregarNotas();
-            carregarSelectClientes();
+            carregarUploads();
             carregarInfoUsuario();
         }
 
@@ -664,10 +892,10 @@
         async function carregarMetricas() {
             try {
                 const { count: c1 } = await supabase.from('clientes').select('*', { count: 'exact', head: true });
-                const { count: c2 } = await supabase.from('notas_fiscais').select('*', { count: 'exact', head: true });
+                const { count: c2 } = await supabase.from('uploads').select('*', { count: 'exact', head: true });
                 const { count: c3 } = await supabase.from('usuarios').select('*', { count: 'exact', head: true });
                 document.getElementById('totalClientes').textContent = c1 || 0;
-                document.getElementById('totalNotas').textContent = c2 || 0;
+                document.getElementById('totalUploads').textContent = c2 || 0;
                 document.getElementById('totalUsuarios').textContent = c3 || 0;
             } catch (err) {
                 console.error(err);
@@ -676,51 +904,132 @@
 
         async function carregarClientes() {
             try {
-                const { data } = await supabase.from('clientes').select('*').limit(20);
-                const tbody = document.getElementById('clientesBody');
+                const { data } = await supabase.from('clientes').select('*').limit(100);
+                const container = document.getElementById('clientesListContainer');
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5">Nenhum cliente</td></tr>';
+                    container.innerHTML = '<p>Nenhum cliente cadastrado</p>';
                     return;
                 }
-                tbody.innerHTML = data.map(c => `<tr><td>${c.nome}</td><td>${c.cpf_cnpj}</td><td>${c.tipo}</td><td>${c.email}</td><td>${c.telefone || '-'}</td></tr>`).join('');
+                container.innerHTML = data.map(c => `
+                    <div class="client-card">
+                        <div class="client-card-header">
+                            <div onclick="abrirClienteDetail(${c.id}, '${c.nome}', '${c.tipo}', '${c.cpf_cnpj}', '${c.email}', '${c.telefone || ''}')">
+                                <div class="client-card-title">${c.nome}</div>
+                                <div class="client-card-subtitle">${c.tipo} • ${c.cpf_cnpj} • ${c.email}</div>
+                            </div>
+                            <div class="action-btns">
+                                <button class="btn-edit" onclick="abrirEditarCliente(${c.id}, '${c.tipo}', '${c.nome}', '${c.cpf_cnpj}', '${c.email}', '${c.telefone || ''}')">✏️</button>
+                                <button class="btn-delete" onclick="deletarCliente(${c.id})">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
             } catch (err) {
                 console.error(err);
             }
         }
 
-        async function carregarSelectClientes() {
-            try {
-                const { data } = await supabase.from('clientes').select('id, nome');
-                const select = document.getElementById('uploadCliente');
-                select.innerHTML = '<option value="">Selecione...</option>' + data.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-            } catch (err) {
-                console.error(err);
-            }
+        async function abrirClienteDetail(id, nome, tipo, cpf, email, telefone) {
+            clienteSelecionado = { id, nome, tipo, cpf, email, telefone };
+            const uploadData = await supabase.from('uploads').select('*').eq('cliente_id', id);
+            
+            const html = `
+                <h2>${nome}</h2>
+                <p><strong>Tipo:</strong> ${tipo} | <strong>CPF/CNPJ:</strong> ${cpf} | <strong>Email:</strong> ${email} | <strong>Telefone:</strong> ${telefone || '-'}</p>
+                
+                <h3 style="margin-top: 30px;">Dashboard de Faturamento</h3>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="dashboard-label">Limite MEI</div>
+                        <div class="dashboard-value">R$ 40.000</div>
+                    </div>
+                    <div class="dashboard-card">
+                        <div class="dashboard-label">Faturado (Mês)</div>
+                        <div class="dashboard-value">R$ 0</div>
+                    </div>
+                    <div class="dashboard-card">
+                        <div class="dashboard-label">Disponível</div>
+                        <div class="dashboard-value">R$ 40.000</div>
+                    </div>
+                </div>
+
+                ${tipo === 'PJ' ? `
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin-bottom: 10px;">Este cliente é <strong>PJ</strong>. Gostaria de cadastrar um contato <strong>PF</strong> vinculado?</p>
+                        <button class="btn btn-small" onclick="abrirNovoClientePF(${id}, '${nome}')">+ Adicionar PF</button>
+                    </div>
+                ` : ''}
+
+                <h3 style="margin-top: 30px;">Importar Arquivos</h3>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <p>📄 Clique ou arraste PDFs aqui</p>
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple>
+                </div>
+
+                <h3 style="margin-top: 30px;">Arquivos Importados</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Arquivo</th><th>Tipo</th><th>Data</th></tr>
+                    </thead>
+                    <tbody>
+                        ${!uploadData.data || uploadData.data.length === 0 ? '<tr><td colspan="3">Nenhum arquivo</td></tr>' : 
+                            uploadData.data.map(u => `<tr><td>${u.arquivo_nome}</td><td>${u.tipo_arquivo}</td><td>${new Date(u.criado_em).toLocaleDateString()}</td></tr>`).join('')
+                        }
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('clienteDetailContent').innerHTML = html;
+            document.getElementById('clientesListView').style.display = 'none';
+            document.getElementById('clienteDetailView').style.display = 'block';
         }
 
-        async function carregarNotas() {
-            try {
-                const { data } = await supabase.from('notas_fiscais').select('*').limit(20);
-                const tbody = document.getElementById('notasBody');
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">Nenhuma nota</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = data.map(n => `<tr><td>${n.numero_nf}</td><td>-</td><td>R$ ${n.valor}</td><td>${n.status}</td></tr>`).join('');
-            } catch (err) {
-                console.error(err);
-            }
+        function voltarClientesList() {
+            clienteSelecionado = null;
+            document.getElementById('clientesListView').style.display = 'block';
+            document.getElementById('clienteDetailView').style.display = 'none';
         }
 
         async function carregarUsuarios() {
             try {
-                const { data } = await supabase.from('usuarios').select('*').limit(20);
+                const { data } = await supabase.from('usuarios').select('*').limit(100);
                 const tbody = document.getElementById('usuariosBody');
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5">Nenhum usuário</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6">Nenhum usuário</td></tr>';
                     return;
                 }
-                tbody.innerHTML = data.map(u => `<tr><td>${u.nome}</td><td>${u.email}</td><td>${u.perfil}</td><td>${u.telefone || '-'}</td><td>${u.ativo ? '✅ Ativo' : '❌ Inativo'}</td></tr>`).join('');
+                tbody.innerHTML = data.map(u => `
+                    <tr>
+                        <td>${u.nome}</td>
+                        <td>${u.email}</td>
+                        <td>${u.perfil}</td>
+                        <td>${u.telefone || '-'}</td>
+                        <td>${u.ativo ? '✅' : '❌'}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-edit" onclick="abrirEditarUsuario(${u.id}, '${u.nome}', '${u.email}', '${u.perfil}', '${u.telefone || ''}')">✏️</button>
+                                <button class="btn-delete" onclick="deletarUsuario(${u.id})">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function carregarUploads() {
+            try {
+                const { data } = await supabase.from('uploads').select('*').limit(50);
+                const tbody = document.getElementById('uploadsBody');
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">Nenhum upload</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(u => {
+                    const cliente = supabase.from('clientes').select('nome').eq('id', u.cliente_id).single();
+                    return `<tr><td>-</td><td>${u.arquivo_nome}</td><td>${u.tipo_arquivo}</td><td>${new Date(u.criado_em).toLocaleDateString()}</td></tr>`;
+                }).join('');
             } catch (err) {
                 console.error(err);
             }
