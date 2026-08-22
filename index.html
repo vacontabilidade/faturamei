@@ -373,10 +373,7 @@
         <div class="top-nav">
             <div style="font-size: 20px; font-weight: 700;">FaturaMEI</div>
             <div class="nav-menu">
-                <button class="nav-btn active" onclick="mudarAba('dashboard', this)">📊 Dashboard</button>
-                <button class="nav-btn" onclick="mudarAba('clientes', this)">👥 Clientes</button>
-                <button class="nav-btn" onclick="mudarAba('uploads', this)">📤 Uploads</button>
-                <button class="nav-btn" onclick="mudarAba('notas', this)">📄 Notas</button>
+                <button class="nav-btn active" onclick="mudarAba('clientes', this)">👥 Clientes</button>
             </div>
             
             <div class="user-menu">
@@ -390,33 +387,7 @@
         </div>
 
         <div class="main-content">
-            <section id="dashboard" class="tab-content active">
-                <h1>Dashboard</h1>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Métrica</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Total de Clientes</td>
-                            <td id="totalClientes">0</td>
-                        </tr>
-                        <tr>
-                            <td>Total de Notas</td>
-                            <td id="totalNotas">0</td>
-                        </tr>
-                        <tr>
-                            <td>Total de Uploads</td>
-                            <td id="totalUploads">0</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <section id="clientes" class="tab-content">
+            <section id="clientes" class="tab-content active">
                 <div id="clientesListView">
                     <div class="section-header">
                         <h1>Clientes</h1>
@@ -429,40 +400,6 @@
                     <button class="back-btn" onclick="voltarClientesList()">← Voltar</button>
                     <div id="clienteDetailContent"></div>
                 </div>
-            </section>
-
-            <section id="uploads" class="tab-content">
-                <h1>Uploads</h1>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Arquivo</th>
-                            <th>Tipo</th>
-                            <th>Data</th>
-                        </tr>
-                    </thead>
-                    <tbody id="uploadsBody">
-                        <tr><td colspan="4">Carregando...</td></tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <section id="notas" class="tab-content">
-                <h1>Notas Fiscais</h1>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>NF</th>
-                            <th>Cliente</th>
-                            <th>Valor</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="notasBody">
-                        <tr><td colspan="4">Carregando...</td></tr>
-                    </tbody>
-                </table>
             </section>
         </div>
     </div>
@@ -550,7 +487,7 @@
     </div>
 
     <footer>
-        FaturaMEI v7.3.0 • Desenvolvido por DSP Group
+        FaturaMEI v7.4.0 • Desenvolvido por DSP Group
     </footer>
 
     <script>
@@ -746,7 +683,7 @@
         }
 
         async function deletarCliente(id) {
-            if (!confirm('Deletar?')) return;
+            if (!confirm('Deseja apagar?')) return;
             try {
                 const { error } = await supabase.from('clientes').delete().eq('id', id);
                 if (error) throw error;
@@ -757,25 +694,9 @@
         }
 
         async function carregarDados() {
-            carregarMetricas();
             carregarClientes();
-            carregarNotas();
-            carregarUploads();
             document.getElementById('userEmailDisplay').textContent = usuarioLogado.email;
             document.getElementById('userRole').textContent = usuarioLogado.email.split('@')[0];
-        }
-
-        async function carregarMetricas() {
-            try {
-                const { count: c1 } = await supabase.from('clientes').select('*', { count: 'exact', head: true });
-                const { count: c2 } = await supabase.from('notas_fiscais').select('*', { count: 'exact', head: true });
-                const { count: c3 } = await supabase.from('uploads').select('*', { count: 'exact', head: true });
-                document.getElementById('totalClientes').textContent = c1 || 0;
-                document.getElementById('totalNotas').textContent = c2 || 0;
-                document.getElementById('totalUploads').textContent = c3 || 0;
-            } catch (err) {
-                console.error(err);
-            }
         }
 
         async function carregarClientes() {
@@ -786,12 +707,15 @@
                     container.innerHTML = '<p>Nenhum cliente</p>';
                     return;
                 }
-                container.innerHTML = data.map(c => `
+                container.innerHTML = data.map(c => {
+                    const tipoFormatado = c.tipo === 'PJ' ? 'Pessoa Jurídica' : 'Pessoa Física';
+                    return `
                     <div class="client-card">
                         <div class="client-card-header">
                             <div onclick='abrirClienteDetail(${c.id}, ${JSON.stringify(c.nome)}, ${JSON.stringify(c.tipo)}, ${JSON.stringify(c.cpf_cnpj)}, ${JSON.stringify(c.email || "")}, ${JSON.stringify(c.telefone || "")}, ${JSON.stringify(c.endereco || "")}, ${JSON.stringify(c.regime_tributario || "")})'>
                                 <div class="client-card-title">${c.nome}</div>
-                                <div class="client-card-subtitle">${c.tipo} • ${c.cpf_cnpj}</div>
+                                <div class="client-card-subtitle">${tipoFormatado}</div>
+                                <div class="client-card-subtitle">${c.cpf_cnpj} - ${c.telefone || '-'}</div>
                             </div>
                             <div class="action-btns">
                                 <button class="btn-edit" onclick='abrirEditarCliente(${c.id}, ${JSON.stringify(c.tipo)}, ${JSON.stringify(c.nome)}, ${JSON.stringify(c.cpf_cnpj)}, ${JSON.stringify(c.email || "")}, ${JSON.stringify(c.telefone || "")}, ${JSON.stringify(c.endereco || "")}, ${JSON.stringify(c.regime_tributario || "")})'>✏️</button>
@@ -799,9 +723,33 @@
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             } catch (err) {
                 console.error(err);
+            }
+        }
+
+        async function processarUpload(e, clienteId) {
+            const files = e.target.files;
+            const tipo = document.getElementById('uploadTipoDoc').value;
+            const msg = document.getElementById('uploadMsg');
+            if (!files.length) return;
+
+            try {
+                const registros = Array.from(files).map(f => ({
+                    cliente_id: clienteId,
+                    arquivo_nome: f.name,
+                    tipo_arquivo: tipo,
+                    tamanho_bytes: f.size,
+                    processado: false
+                }));
+                const { error } = await supabase.from('uploads').insert(registros);
+                if (error) throw error;
+                msg.innerHTML = '<p class="success">✅ ' + files.length + ' arquivo(s) importado(s)!</p>';
+                const { data } = await supabase.from('clientes').select('*').eq('id', clienteId).single();
+                abrirClienteDetail(data.id, data.nome, data.tipo, data.cpf_cnpj, data.email, data.telefone, data.endereco, data.regime_tributario);
+            } catch (err) {
+                msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
             }
         }
 
@@ -841,10 +789,17 @@
                 </div>
 
                 <h3 style="margin-top: 30px;">Importar Arquivos</h3>
+                <select id="uploadTipoDoc" class="select">
+                    <option value="nf_compra">NF Compra</option>
+                    <option value="nf_venda">NF Venda</option>
+                    <option value="nf_servicos">NF Serviços</option>
+                    <option value="extrato">Extrato</option>
+                </select>
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <p>📄 Clique ou arraste PDFs aqui</p>
-                    <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple>
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.png" multiple onchange="processarUpload(event, ${id})">
                 </div>
+                <div id="uploadMsg"></div>
 
                 <h3 style="margin-top: 30px;">Arquivos Importados</h3>
                 <table class="data-table">
@@ -879,34 +834,6 @@
             document.getElementById('editClienteEndereco').value = endereco || '';
             document.getElementById('editClienteRegime').value = regime || '';
             document.getElementById('modalEditarCliente').classList.add('active');
-        }
-
-        async function carregarNotas() {
-            try {
-                const { data } = await supabase.from('notas_fiscais').select('*').eq('empresa_id', 1).limit(50);
-                const tbody = document.getElementById('notasBody');
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">Nenhuma nota</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = data.map(n => `<tr><td>${n.numero_nf}</td><td>-</td><td>R$ ${n.valor}</td><td>${n.status}</td></tr>`).join('');
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function carregarUploads() {
-            try {
-                const { data } = await supabase.from('uploads').select('*').limit(50);
-                const tbody = document.getElementById('uploadsBody');
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4">Nenhum upload</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = data.map(u => `<tr><td>-</td><td>${u.arquivo_nome}</td><td>${u.tipo_arquivo}</td><td>${new Date(u.criado_em).toLocaleDateString()}</td></tr>`).join('');
-            } catch (err) {
-                console.error(err);
-            }
         }
 
         window.addEventListener('load', aguardarSupabase);
