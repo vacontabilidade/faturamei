@@ -380,18 +380,13 @@
             </div>
             
             <div class="user-menu">
-                <button class="user-button" onclick="toggleUserDropdown()">
-                    <span>👤</span>
-                    <span id="userNameTopNav">Usuário</span>
-                </button>
-                <div id="userDropdown" class="user-dropdown">
-                    <div class="dropdown-item">
-                        <div class="dropdown-item-label">Email</div>
-                        <div class="dropdown-item-value" id="userEmailDropdown">-</div>
-                    </div>
-                    <div class="dropdown-divider"></div>
-                    <button class="btn" style="width: 100%; font-size: 12px;" onclick="logout()">Sair</button>
+                <div style="text-align: right; font-size: 12px; line-height: 1.6;">
+                    <div>Logado como <strong id="userRole">-</strong></div>
+                    <div id="userNameDisplay">-</div>
+                    <div id="userEmailDisplay" style="color: var(--gray-600);">-</div>
                 </div>
+                <button class="user-button" onclick="abrirMinhaConta()">Minha Conta</button>
+                <button class="user-button" onclick="logout()" style="background: #dc2626;">Sair</button>
             </div>
         </div>
 
@@ -518,8 +513,29 @@
         </div>
     </div>
 
+    <!-- MODAL MINHA CONTA -->
+    <div id="modalMinhaConta" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Minha Conta</h2>
+                <button class="close-btn" onclick="fecharModal('modalMinhaConta')">×</button>
+            </div>
+            <form onsubmit="atualizarMinhaConta(event)">
+                <input type="text" class="input" id="minhaContaNome" placeholder="Nome" disabled>
+                <input type="email" class="input" id="minhaContaEmail" placeholder="Email" disabled>
+                <input type="text" class="input" id="minhaContaTelefone" placeholder="Telefone" disabled>
+                <label style="font-weight: 600; font-size: 12px; color: var(--gray-600); margin-top: 20px;">Alterar Senha</label>
+                <input type="password" class="input" id="minhaContaSenhaAtual" placeholder="Senha Atual">
+                <input type="password" class="input" id="minhaContaSenhaNova" placeholder="Nova Senha">
+                <input type="password" class="input" id="minhaContaSenhaConfirma" placeholder="Confirmar Nova Senha">
+                <button type="submit" class="btn" style="width: 100%;">Salvar</button>
+                <div id="modalMinhaContaMsg"></div>
+            </form>
+        </div>
+    </div>
+
     <footer>
-        FaturaMEI v7.1.0 • Desenvolvido por DSP Group
+        FaturaMEI v7.2.0 • Desenvolvido por DSP Group
     </footer>
 
     <script>
@@ -615,16 +631,39 @@
             document.getElementById('appScreen').classList.add('active');
         }
 
-        function toggleUserDropdown() {
-            document.getElementById('userDropdown').classList.toggle('active');
+        function abrirMinhaConta() {
+            document.getElementById('minhaContaNome').value = usuarioLogado.email.split('@')[0];
+            document.getElementById('minhaContaEmail').value = usuarioLogado.email;
+            document.getElementById('modalMinhaConta').classList.add('active');
         }
 
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('userDropdown');
-            if (!e.target.closest('.user-menu')) {
-                dropdown.classList.remove('active');
+        async function atualizarMinhaConta(e) {
+            e.preventDefault();
+            const senhaNova = document.getElementById('minhaContaSenhaNova').value;
+            const senhaConfirma = document.getElementById('minhaContaSenhaConfirma').value;
+            const msg = document.getElementById('modalMinhaContaMsg');
+
+            if (senhaNova && senhaNova !== senhaConfirma) {
+                msg.innerHTML = '<p class="error">❌ Senhas não conferem</p>';
+                return;
             }
-        });
+
+            if (senhaNova) {
+                try {
+                    const { error } = await supabase.auth.updateUser({ password: senhaNova });
+                    if (error) throw error;
+                    msg.innerHTML = '<p class="success">✅ Senha alterada!</p>';
+                    setTimeout(() => {
+                        fecharModal('modalMinhaConta');
+                        document.getElementById('minhaContaSenhaAtual').value = '';
+                        document.getElementById('minhaContaSenhaNova').value = '';
+                        document.getElementById('minhaContaSenhaConfirma').value = '';
+                    }, 1500);
+                } catch (err) {
+                    msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
+                }
+            }
+        }
 
         function mudarAba(aba, btn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -708,8 +747,9 @@
             carregarClientes();
             carregarNotas();
             carregarUploads();
-            document.getElementById('userEmailDropdown').textContent = usuarioLogado.email;
-            document.getElementById('userNameTopNav').textContent = usuarioLogado.email.split('@')[0];
+            document.getElementById('userNameDisplay').textContent = usuarioLogado.email.split('@')[0];
+            document.getElementById('userEmailDisplay').textContent = usuarioLogado.email;
+            document.getElementById('userRole').textContent = 'Admin';
         }
 
         async function carregarMetricas() {
@@ -755,9 +795,36 @@
         async function abrirClienteDetail(id, nome, tipo, cpf, email, telefone) {
             const { data: uploads } = await supabase.from('uploads').select('*').eq('cliente_id', id);
             
+            const tipoFormatado = tipo === 'PJ' ? 'Pessoa Jurídica' : 'Pessoa Física';
+            
             const html = `
                 <h2>${nome}</h2>
-                <p><strong>${tipo}</strong> • ${cpf} • ${email} • ${telefone}</p>
+                
+                <div style="background: white; border: 1px solid var(--gray-200); border-radius: 8px; padding: 20px; margin: 20px 0;">
+                    <div style="margin-bottom: 15px;">
+                        <strong>${tipoFormatado}</strong>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Nome</div>
+                        <div>${nome}</div>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Telefone</div>
+                        <div>${telefone || '-'}</div>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Email</div>
+                        <div>${email || '-'}</div>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Endereço</div>
+                        <div>-</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Regime Tributário</div>
+                        <div>-</div>
+                    </div>
+                </div>
                 
                 <h3 style="margin-top: 30px;">Dashboard MEI</h3>
                 <div class="dashboard-grid">
