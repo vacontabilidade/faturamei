@@ -382,7 +382,6 @@
             <div class="user-menu">
                 <div style="text-align: right; font-size: 12px; line-height: 1.6;">
                     <div>Logado como <strong id="userRole">-</strong></div>
-                    <div id="userNameDisplay">-</div>
                     <div id="userEmailDisplay" style="color: var(--gray-600);">-</div>
                 </div>
                 <button class="user-button" onclick="abrirMinhaConta()">Minha Conta</button>
@@ -484,6 +483,14 @@
                 <input type="text" class="input" id="clienteCPF" placeholder="CNPJ" maxlength="18" required oninput="mascaraCNPJ(this)">
                 <input type="email" class="input" id="clienteEmail" placeholder="Email">
                 <input type="text" class="input" id="clienteTelefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
+                <input type="text" class="input" id="clienteEndereco" placeholder="Endereço">
+                <select id="clienteRegime" class="select">
+                    <option value="">Regime Tributário...</option>
+                    <option value="MEI">MEI</option>
+                    <option value="Simples Nacional">Simples Nacional</option>
+                    <option value="Lucro Presumido">Lucro Presumido</option>
+                    <option value="Lucro Real">Lucro Real</option>
+                </select>
                 <button type="submit" class="btn" style="width: 100%;">Salvar</button>
                 <div id="modalClienteMsg"></div>
             </form>
@@ -507,6 +514,14 @@
                 <input type="text" class="input" id="editClienteCPF" placeholder="CNPJ" maxlength="18" required oninput="mascaraCNPJ(this)">
                 <input type="email" class="input" id="editClienteEmail" placeholder="Email">
                 <input type="text" class="input" id="editClienteTelefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
+                <input type="text" class="input" id="editClienteEndereco" placeholder="Endereço">
+                <select id="editClienteRegime" class="select">
+                    <option value="">Regime Tributário...</option>
+                    <option value="MEI">MEI</option>
+                    <option value="Simples Nacional">Simples Nacional</option>
+                    <option value="Lucro Presumido">Lucro Presumido</option>
+                    <option value="Lucro Real">Lucro Real</option>
+                </select>
                 <button type="submit" class="btn" style="width: 100%;">Atualizar</button>
                 <div id="modalEditarClienteMsg"></div>
             </form>
@@ -535,7 +550,7 @@
     </div>
 
     <footer>
-        FaturaMEI v7.2.0 • Desenvolvido por DSP Group
+        FaturaMEI v7.3.0 • Desenvolvido por DSP Group
     </footer>
 
     <script>
@@ -688,19 +703,19 @@
             const cpf = document.getElementById('clienteCPF').value.replace(/\D/g, '');
             const email = document.getElementById('clienteEmail').value;
             const telefone = document.getElementById('clienteTelefone').value;
+            const endereco = document.getElementById('clienteEndereco').value;
+            const regime = document.getElementById('clienteRegime').value;
             const msg = document.getElementById('modalClienteMsg');
 
             try {
                 const { error } = await supabase.from('clientes').insert([{
-                    empresa_id: 1, tipo, nome, cpf_cnpj: cpf, email, telefone, ativo: true
+                    empresa_id: 1, tipo, nome, cpf_cnpj: cpf, email, telefone,
+                    endereco, regime_tributario: regime, ativo: true
                 }]);
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Salvo!</p>';
-                setTimeout(() => {
-                    document.getElementById('modalCliente').reset();
-                    fecharModal('modalCliente');
-                    carregarClientes();
-                }, 1000);
+                document.querySelector('#modalCliente form').reset();
+                fecharModal('modalCliente');
+                carregarClientes();
             } catch (err) {
                 msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
             }
@@ -714,18 +729,17 @@
             const cpf = document.getElementById('editClienteCPF').value.replace(/\D/g, '');
             const email = document.getElementById('editClienteEmail').value;
             const telefone = document.getElementById('editClienteTelefone').value;
+            const endereco = document.getElementById('editClienteEndereco').value;
+            const regime = document.getElementById('editClienteRegime').value;
             const msg = document.getElementById('modalEditarClienteMsg');
 
             try {
                 const { error } = await supabase.from('clientes').update({
-                    tipo, nome, cpf_cnpj: cpf, email, telefone
+                    tipo, nome, cpf_cnpj: cpf, email, telefone, endereco, regime_tributario: regime
                 }).eq('id', id);
                 if (error) throw error;
-                msg.innerHTML = '<p class="success">✅ Atualizado!</p>';
-                setTimeout(() => {
-                    fecharModal('modalEditarCliente');
-                    carregarClientes();
-                }, 1000);
+                fecharModal('modalEditarCliente');
+                carregarClientes();
             } catch (err) {
                 msg.innerHTML = '<p class="error">❌ ' + err.message + '</p>';
             }
@@ -747,9 +761,8 @@
             carregarClientes();
             carregarNotas();
             carregarUploads();
-            document.getElementById('userNameDisplay').textContent = usuarioLogado.email.split('@')[0];
             document.getElementById('userEmailDisplay').textContent = usuarioLogado.email;
-            document.getElementById('userRole').textContent = 'Admin';
+            document.getElementById('userRole').textContent = usuarioLogado.email.split('@')[0];
         }
 
         async function carregarMetricas() {
@@ -776,12 +789,12 @@
                 container.innerHTML = data.map(c => `
                     <div class="client-card">
                         <div class="client-card-header">
-                            <div onclick="abrirClienteDetail(${c.id}, '${c.nome}', '${c.tipo}', '${c.cpf_cnpj}', '${c.email || ''}', '${c.telefone || ''}')">
+                            <div onclick='abrirClienteDetail(${c.id}, ${JSON.stringify(c.nome)}, ${JSON.stringify(c.tipo)}, ${JSON.stringify(c.cpf_cnpj)}, ${JSON.stringify(c.email || "")}, ${JSON.stringify(c.telefone || "")}, ${JSON.stringify(c.endereco || "")}, ${JSON.stringify(c.regime_tributario || "")})'>
                                 <div class="client-card-title">${c.nome}</div>
                                 <div class="client-card-subtitle">${c.tipo} • ${c.cpf_cnpj}</div>
                             </div>
                             <div class="action-btns">
-                                <button class="btn-edit" onclick="abrirEditarCliente(${c.id}, '${c.tipo}', '${c.nome}', '${c.cpf_cnpj}', '${c.email || ''}', '${c.telefone || ''}')">✏️</button>
+                                <button class="btn-edit" onclick='abrirEditarCliente(${c.id}, ${JSON.stringify(c.tipo)}, ${JSON.stringify(c.nome)}, ${JSON.stringify(c.cpf_cnpj)}, ${JSON.stringify(c.email || "")}, ${JSON.stringify(c.telefone || "")}, ${JSON.stringify(c.endereco || "")}, ${JSON.stringify(c.regime_tributario || "")})'>✏️</button>
                                 <button class="btn-delete" onclick="deletarCliente(${c.id})">🗑️</button>
                             </div>
                         </div>
@@ -792,7 +805,7 @@
             }
         }
 
-        async function abrirClienteDetail(id, nome, tipo, cpf, email, telefone) {
+        async function abrirClienteDetail(id, nome, tipo, cpf, email, telefone, endereco, regime) {
             const { data: uploads } = await supabase.from('uploads').select('*').eq('cliente_id', id);
             
             const tipoFormatado = tipo === 'PJ' ? 'Pessoa Jurídica' : 'Pessoa Física';
@@ -804,26 +817,11 @@
                     <div style="margin-bottom: 15px;">
                         <strong>${tipoFormatado}</strong>
                     </div>
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Nome</div>
-                        <div>${nome}</div>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Telefone</div>
-                        <div>${telefone || '-'}</div>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Email</div>
-                        <div>${email || '-'}</div>
-                    </div>
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Endereço</div>
-                        <div>-</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--gray-600); font-size: 12px;">Regime Tributário</div>
-                        <div>-</div>
-                    </div>
+                    <div style="margin-bottom: 8px;"><strong>Nome:</strong> ${nome}</div>
+                    <div style="margin-bottom: 8px;"><strong>Telefone:</strong> ${telefone || '-'}</div>
+                    <div style="margin-bottom: 8px;"><strong>Email:</strong> ${email || '-'}</div>
+                    <div style="margin-bottom: 8px;"><strong>Endereço:</strong> ${endereco || '-'}</div>
+                    <div><strong>Regime Tributário:</strong> ${regime || '-'}</div>
                 </div>
                 
                 <h3 style="margin-top: 30px;">Dashboard MEI</h3>
@@ -871,13 +869,15 @@
             document.getElementById('clienteDetailView').style.display = 'none';
         }
 
-        function abrirEditarCliente(id, tipo, nome, cpf, email, telefone) {
+        function abrirEditarCliente(id, tipo, nome, cpf, email, telefone, endereco, regime) {
             document.getElementById('editClienteId').value = id;
             document.getElementById('editClienteTipo').value = tipo;
             document.getElementById('editClienteNome').value = nome;
             document.getElementById('editClienteCPF').value = cpf;
             document.getElementById('editClienteEmail').value = email;
             document.getElementById('editClienteTelefone').value = telefone;
+            document.getElementById('editClienteEndereco').value = endereco || '';
+            document.getElementById('editClienteRegime').value = regime || '';
             document.getElementById('modalEditarCliente').classList.add('active');
         }
 
